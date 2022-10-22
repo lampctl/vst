@@ -11,6 +11,8 @@ project(lampctl
     DESCRIPTION "lampctl VST3 plugin"
 )
 
+find_package(Boost 1.75.0 REQUIRED)
+
 add_subdirectory(${vst3sdk_SOURCE_DIR} ${PROJECT_BINARY_DIR}/vst3sdk)
 smtg_enable_vst3_sdk()
 
