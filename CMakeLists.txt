@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15.0)
 
-set(SMTG_ADD_VSTGUI OFF)
+set(SMTG_ADD_VSTGUI ON)
 
 if(NOT vst3sdk_SOURCE_DIR)
     message(FATAL_ERROR "You must specify the path to the VST3 SDK!")
@@ -17,6 +17,7 @@ add_subdirectory(${vst3sdk_SOURCE_DIR} ${PROJECT_BINARY_DIR}/vst3sdk)
 smtg_enable_vst3_sdk()
 
 smtg_add_vst3plugin(lampctl
+    resource/plug.uidesc
     src/lampctlcids.h
     src/lampctlcontroller.h
     src/lampctlcontroller.cpp
@@ -28,6 +29,12 @@ smtg_add_vst3plugin(lampctl
 target_link_libraries(lampctl
     PRIVATE
         sdk
+        vstgui_support
+)
+
+smtg_target_add_plugin_resources(lampctl
+    RESOURCES
+        resource/plug.uidesc
 )
 
 smtg_target_configure_version_file(lampctl)
