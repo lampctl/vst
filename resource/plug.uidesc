@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+  <template name="Editor" size="400, 200">
+    <view class="CTextLabel" custom-view-name="TextLabel" />
+  </template>
+</vstgui-ui-description>
