@@ -22,39 +22,12 @@
  * IN THE SOFTWARE.
  */
 
-#include "public.sdk/source/main/pluginfactory.h"
+#pragma once
 
-#include "lampctlcids.h"
-#include "lampctlcontroller.h"
-#include "lampctlprocessor.h"
+#include "pluginterfaces/base/funknown.h"
+#include "pluginterfaces/vst/ivstaudioprocessor.h"
 
-#include "projectversion.h"
+#define LampctlVST3Category Steinberg::Vst::PlugType::kFxInstrument
 
-#define stringPluginName "lampctl"
-
-BEGIN_FACTORY ("Nathan Osman",
-               "https://nathanosman.com",
-               "mailto:nathan@nathanosman.com",
-               PFactoryInfo::kNoFlags)
-
-    DEF_CLASS2 (INLINE_UID_FROM_FUID(kLampctlProcessorUID),
-                PClassInfo::kManyInstances,
-                kVstAudioEffectClass,
-                stringPluginName,
-                Vst::kDistributable,
-                LampctlVST3Category,
-                FULL_VERSION_STR,
-                kVstVersionString,
-                LampctlProcessor::createInstance)
-
-    DEF_CLASS2 (INLINE_UID_FROM_FUID(kLampctlControllerUID),
-                PClassInfo::kManyInstances,
-                kVstComponentControllerClass,
-                stringPluginName,
-                0,
-                "",
-                FULL_VERSION_STR,
-                kVstVersionString,
-                LampctlController::createInstance)
-
-END_FACTORY
+static const Steinberg::FUID kLampctlProcessorUID (0x605D8D9A, 0xB4E15C49, 0xADF0A282, 0xDD62978A);
+static const Steinberg::FUID kLampctlControllerUID (0x89E36D93, 0xF2A55854, 0x8609F7C7, 0x2DEA89F9);

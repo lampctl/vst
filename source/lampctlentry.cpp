@@ -22,16 +22,39 @@
  * IN THE SOFTWARE.
  */
 
-#pragma once
+#include "public.sdk/source/main/pluginfactory.h"
 
-#include "public.sdk/source/vst/vstaudioeffect.h"
+#include "lampctlcids.h"
+#include "lampctlcontroller.h"
+#include "lampctlprocessor.h"
 
-class LampctlProcessor : public Steinberg::Vst::AudioEffect
-{
-public:
+#include "projectversion.h"
 
-    static Steinberg::FUnknown *createInstance(void *)
-    {
-        return (Steinberg::Vst::IAudioProcessor *)new LampctlProcessor;
-    }
-};
+#define stringPluginName "Lampctl"
+
+BEGIN_FACTORY ("Nathan Osman",
+               "https://nathanosman.com",
+               "mailto:nathan@nathanosman.com",
+               PFactoryInfo::kNoFlags)
+
+    DEF_CLASS2 (INLINE_UID_FROM_FUID(kLampctlProcessorUID),
+                PClassInfo::kManyInstances,
+                kVstAudioEffectClass,
+                stringPluginName,
+                Vst::kDistributable,
+                LampctlVST3Category,
+                FULL_VERSION_STR,
+                kVstVersionString,
+                LampctlProcessor::createInstance)
+
+    DEF_CLASS2 (INLINE_UID_FROM_FUID(kLampctlControllerUID),
+                PClassInfo::kManyInstances,
+                kVstComponentControllerClass,
+                stringPluginName,
+                0,
+                "",
+                FULL_VERSION_STR,
+                kVstVersionString,
+                LampctlController::createInstance)
+
+END_FACTORY

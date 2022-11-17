@@ -24,14 +24,27 @@
 
 #pragma once
 
-#include "public.sdk/source/vst/vsteditcontroller.h"
+#include "public.sdk/source/vst/vstaudioeffect.h"
 
-class LampctlController : public Steinberg::Vst::EditControllerEx1
+#include "socket.h"
+
+class LampctlProcessor : public Steinberg::Vst::AudioEffect
 {
 public:
 
+    LampctlProcessor();
+    ~LampctlProcessor() SMTG_OVERRIDE;
+
     static Steinberg::FUnknown *createInstance(void *)
     {
-        return (Steinberg::Vst::IEditController *)new LampctlController;
+        return (Steinberg::Vst::IAudioProcessor *)new LampctlProcessor;
     }
+
+    Steinberg::tresult PLUGIN_API initialize(Steinberg::FUnknown *context) SMTG_OVERRIDE;
+    Steinberg::tresult PLUGIN_API terminate() SMTG_OVERRIDE;
+    Steinberg::tresult PLUGIN_API process(Steinberg::Vst::ProcessData &data) SMTG_OVERRIDE;
+
+private:
+
+    Socket *mSocket;
 };

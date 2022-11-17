@@ -22,4 +22,48 @@
  * IN THE SOFTWARE.
  */
 
-#include "lampctlcontroller.h"
+#include <iostream>
+
+#include <boost/bind/bind.hpp>
+
+#include "socket.h"
+
+Socket::Socket(std::function<void(const std::string&)> errorHandler)
+    : mErrorHandler(errorHandler)
+    , mThread(nullptr)
+{}
+
+Socket::~Socket()
+{
+    disconnect();
+}
+
+void Socket::connect(const std::string &host, const std::string &port)
+{
+    mSession = std::make_shared<Session>(host, port, mErrorHandler, mContext);
+
+    mContext.restart();
+    mContext.post(boost::bind(&Session::run, mSession));
+
+    mThread = new boost::thread(
+        boost::bind(&boost::asio::io_context::run, &mContext)
+    );
+}
+
+void Socket::disconnect()
+{
+    if (mThread) {
+        mContext.post(boost::bind(&Session::close, mSession));
+
+        mThread->join();
+        delete mThread;
+        mThread = nullptr;
+
+        mSession.reset();
+    }
+}
+
+void Socket::send(const std::string &json)
+{
+    mContext.post(boost::bind(&Session::send, mSession, json));
+}

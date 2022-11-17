@@ -24,10 +24,32 @@
 
 #pragma once
 
-#include "pluginterfaces/base/funknown.h"
-#include "pluginterfaces/vst/vsttypes.h"
+#include <functional>
+#include <memory>
+#include <string>
 
-static const Steinberg::FUID kLampctlProcessorUID (0x605D8D9A, 0xB4E15C49, 0xADF0A282, 0xDD62978A);
-static const Steinberg::FUID kLampctlControllerUID (0x89E36D93, 0xF2A55854, 0x8609F7C7, 0x2DEA89F9);
+#include <boost/asio/io_context.hpp>
+#include <boost/thread.hpp>
 
-#define LampctlVST3Category "Fx"
+#include "session.h"
+
+class Socket
+{
+public:
+
+    Socket(std::function<void(const std::string&)> errorHandler);
+    ~Socket();
+
+    void connect(const std::string &host, const std::string &port);
+    void disconnect();
+
+    void send(const std::string &json);
+
+private:
+
+    std::function<void(const std::string &)> mErrorHandler;
+
+    boost::thread *mThread;
+    boost::asio::io_context mContext;
+    std::shared_ptr<Session> mSession;
+};

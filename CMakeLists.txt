@@ -18,12 +18,16 @@ smtg_enable_vst3_sdk()
 
 smtg_add_vst3plugin(lampctl
     resource/plug.uidesc
-    src/lampctlcids.h
-    src/lampctlcontroller.h
-    src/lampctlcontroller.cpp
-    src/lampctlentry.cpp
-    src/lampctlprocessor.h
-    src/lampctlprocessor.cpp
+    source/lampctlcids.h
+    source/lampctlcontroller.h
+    source/lampctlcontroller.cpp
+    source/lampctlentry.cpp
+    source/lampctlprocessor.h
+    source/lampctlprocessor.cpp
+    source/session.h
+    source/session.cpp
+    source/socket.h
+    source/socket.cpp
 )
 
 target_link_libraries(lampctl
