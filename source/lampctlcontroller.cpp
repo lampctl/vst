@@ -89,13 +89,13 @@ IController *LampctlController::createSubController(VSTGUI::UTF8StringPtr name,
     return nullptr;
 }
 
-void LampctlController::connect(const VSTGUI::UTF8String &url)
+void LampctlController::connect(const VSTGUI::UTF8String &ip)
 {
     sendMessageWithAttribute(
         this,
         MSG_ID_CONNECT,
-        MSG_ATTR_URL,
-        url.getString()
+        MSG_ATTR_IP,
+        ip.getString()
     );
 }
 

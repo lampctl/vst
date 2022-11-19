@@ -14,13 +14,13 @@
                             "origin": "10, 10",
                             "size": "300, 20",
                             "text-alignment": "left",
-                            "title": "WebSocket URL:"
+                            "title": "IP Address:"
                         }
                     },
                     "CTextEdit": {
                         "attributes": {
                             "class": "CTextEdit",
-                            "control-tag": "URL",
+                            "control-tag": "IP",
                             "frame-color": "~ WhiteCColor",
                             "frame-width": "1",
                             "origin": "20, 30",
@@ -93,7 +93,7 @@
             }
         },
         "control-tags": {
-            "URL": "1000",
+            "IP": "1000",
             "Connect": "1001",
             "MapPath": "1002",
             "Browse": "1003",

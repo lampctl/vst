@@ -34,7 +34,7 @@
 using namespace VSTGUI;
 
 LampctlConnectionController::LampctlConnectionController(LampctlController *controller)
-    : mURL(nullptr)
+    : mIP(nullptr)
     , mMapPath(nullptr)
     , mStatus(nullptr)
     , mController(controller)
@@ -52,7 +52,7 @@ void LampctlConnectionController::controlEndEdit(CControl *pControl)
 {
     switch (pControl->getTag()) {
     case kConnectTag:
-        mController->connect(mURL->getText());
+        mController->connect(mIP->getText());
         break;
     case kBrowseTag:
         browse();
@@ -84,8 +84,8 @@ CView *LampctlConnectionController::verifyView(CView* view,
     CControl *pControl = dynamic_cast<CControl *>(view);
     if (pControl) {
         switch (pControl->getTag()) {
-        case kURLTag:
-            mURL = dynamic_cast<CTextEdit *>(view);
+        case kIPTag:
+            mIP = dynamic_cast<CTextEdit *>(view);
             break;
         case kMapPathTag:
             mMapPath = dynamic_cast<CTextLabel *>(view);

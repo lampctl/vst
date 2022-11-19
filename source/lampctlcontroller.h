@@ -61,7 +61,7 @@ public:
                                              const VSTGUI::IUIDescription *description,
                                              VSTGUI::VST3Editor *editor) SMTG_OVERRIDE;
 
-    void connect(const VSTGUI::UTF8String &url);
+    void connect(const VSTGUI::UTF8String &ip);
 
     const VSTGUI::UTF8String &getMapPath() const;
     void setMapPath(const VSTGUI::UTF8String &mapPath);

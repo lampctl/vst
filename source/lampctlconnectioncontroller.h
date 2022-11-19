@@ -40,7 +40,7 @@ class LampctlConnectionController : public VSTGUI::IController
 public:
 
     enum {
-        kURLTag     = 1000,
+        kIPTag      = 1000,
         kConnectTag = 1001,
         kMapPathTag = 1002,
         kBrowseTag  = 1003,
@@ -64,7 +64,7 @@ private:
 
     void browse();
 
-    VSTGUI::CTextEdit *mURL;
+    VSTGUI::CTextEdit *mIP;
     VSTGUI::CTextLabel *mMapPath;
     VSTGUI::CTextLabel *mStatus;
 

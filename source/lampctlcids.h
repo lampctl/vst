@@ -33,7 +33,7 @@
 #define MSG_ID_SET_MAP_FILE "set_map_file"
 #define MSG_ID_STATUS       "status"
 
-#define MSG_ATTR_URL         "url"
+#define MSG_ATTR_IP          "ip"
 #define MSG_ATTR_PATH        "path"
 #define MSG_ATTR_DESCRIPTION "description"
 
