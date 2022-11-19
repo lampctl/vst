@@ -70,7 +70,7 @@ public:
 
 private:
 
-    std::List<LampctlConnectionController *> mConnectionControllers;
+    std::list<LampctlConnectionController *> mConnectionControllers;
 
     VSTGUI::UTF8String mMapPath;
     VSTGUI::UTF8String mStatus;
