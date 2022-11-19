@@ -92,7 +92,23 @@ IController *LampctlController::createSubController(VSTGUI::UTF8StringPtr name,
 
 void LampctlController::connect(const VSTGUI::UTF8String &url)
 {
-    //...
+    IMessage *message = allocateMessage();
+    if (message) {
+        FReleaser msgReleaser(message);
+        message->setMessageID(MSG_ID_CONNECT);
+        TChar tURL[256] = {0};
+        if (VST3::StringConvert::convert(url.getString(),
+                                         tURL,
+                                         sizeof(tURL) / sizeof(TChar))) {
+            message->getAttributes()->setString(MSG_ATTR_URL, tURL);
+            sendMessage(message);
+        }
+    }
+}
+
+const UTF8String &LampctlController::getMapPath() const
+{
+    return mMapPath;
 }
 
 void LampctlController::setMapPath(const VSTGUI::UTF8String &mapPath)

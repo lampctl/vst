@@ -62,14 +62,16 @@ public:
                                              VSTGUI::VST3Editor *editor) SMTG_OVERRIDE;
 
     void connect(const VSTGUI::UTF8String &url);
+
+    const VSTGUI::UTF8String &getMapPath() const;
     void setMapPath(const VSTGUI::UTF8String &mapPath);
+
     void removeConnectionController(LampctlConnectionController *connectionController);
 
 private:
 
     std::List<LampctlConnectionController *> mConnectionControllers;
 
-    VSTGUI::UTF8String mURL;
     VSTGUI::UTF8String mMapPath;
     VSTGUI::UTF8String mStatus;
 };

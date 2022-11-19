@@ -89,6 +89,7 @@ CView *LampctlConnectionController::verifyView(CView* view,
             break;
         case kMapPathTag:
             mMapPath = dynamic_cast<CTextLabel *>(view);
+            mMapPath->setText(mController->getMapPath());
             break;
         case kStatusTag:
             mStatus = dynamic_cast<CTextLabel *>(view);
