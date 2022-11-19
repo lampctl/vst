@@ -24,9 +24,20 @@
 
 #pragma once
 
+#include <list>
+
 #include "public.sdk/source/vst/vsteditcontroller.h"
 #include "vstgui/plugin-bindings/vst3editor.h"
 
+#include "lampctlconnectioncontroller.h"
+
+/**
+ * @brief Controller class for presenting the plugin user interface
+ *
+ * The controller class displays the controls for connecting to the websocket
+ * and browsing for the map file. It receives status updates from the
+ * processor class.
+ */
 class LampctlController :
         public Steinberg::Vst::EditControllerEx1,
         public VSTGUI::VST3EditorDelegate
@@ -42,17 +53,23 @@ public:
     }
 
     Steinberg::tresult PLUGIN_API initialize(Steinberg::FUnknown *context) SMTG_OVERRIDE;
-
     Steinberg::tresult PLUGIN_API notify(Steinberg::Vst::IMessage *message) SMTG_OVERRIDE;
 
     Steinberg::IPlugView *createView(Steinberg::FIDString name) SMTG_OVERRIDE;
-    VSTGUI::CView *createCustomView(VSTGUI::UTF8StringPtr name,
-                                    const VSTGUI::UIAttributes& attributes,
-                                    const VSTGUI::IUIDescription* description,
-                                    VSTGUI::VST3Editor* editor) SMTG_OVERRIDE;
-    void willClose(VSTGUI::VST3Editor *editor) SMTG_OVERRIDE;
+
+    VSTGUI::IController *createSubController(VSTGUI::UTF8StringPtr name,
+                                             const VSTGUI::IUIDescription *description,
+                                             VSTGUI::VST3Editor *editor) SMTG_OVERRIDE;
+
+    void connect(const VSTGUI::UTF8String &url);
+    void setMapPath(const VSTGUI::UTF8String &mapPath);
+    void removeConnectionController(LampctlConnectionController *connectionController);
 
 private:
 
-    VSTGUI::CTextLabel *mTextLabel;
+    std::List<LampctlConnectionController *> mConnectionControllers;
+
+    VSTGUI::UTF8String mURL;
+    VSTGUI::UTF8String mMapPath;
+    VSTGUI::UTF8String mStatus;
 };

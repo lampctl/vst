@@ -1,6 +1,103 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<vstgui-ui-description version="1">
-  <template name="Editor" size="400, 200">
-    <view class="CTextLabel" custom-view-name="TextLabel" />
-  </template>
-</vstgui-ui-description>
+{
+    "vstgui-ui-description": {
+        "version": "1",
+        "templates": {
+            "Editor": {
+                "attributes": {
+                    "sub-controller": "ConnectionController",
+                    "size": "320, 160"
+                },
+                "children": {
+                    "CTextLabel": {
+                        "attributes": {
+                            "class": "CTextLabel",
+                            "origin": "10, 10",
+                            "size": "300, 20",
+                            "text-alignment": "left",
+                            "title": "WebSocket URL:"
+                        }
+                    },
+                    "CTextEdit": {
+                        "attributes": {
+                            "class": "CTextEdit",
+                            "control-tag": "URL",
+                            "frame-color": "~ WhiteCColor",
+                            "frame-width": "1",
+                            "origin": "20, 30",
+                            "size": "180, 20",
+                            "text-alignment": "left",
+                            "text-inset": "4, 0"
+                        }
+                    },
+                    "CTextButton": {
+                        "attributes": {
+                            "class": "CTextButton",
+                            "control-tag": "Connect",
+                            "frame-width": "0",
+                            "origin": "210, 30",
+                            "round-radius": "0",
+                            "size": "100, 20",
+                            "title": "Connect"
+                        }
+                    },
+                    "CTextLabel": {
+                        "attributes": {
+                            "class": "CTextLabel",
+                            "origin": "10, 60",
+                            "size": "300, 20",
+                            "text-alignment": "left",
+                            "title": "Map file:"
+                        }
+                    },
+                    "CTextLabel": {
+                        "attributes": {
+                            "class": "CTextLabel",
+                            "control-tag": "MapPath",
+                            "origin": "20, 80",
+                            "size": "180, 20",
+                            "text-alignment": "left",
+                            "title": "No file selected"
+                        }
+                    },
+                    "CTextButton": {
+                        "attributes": {
+                            "class": "CTextButton",
+                            "control-tag": "Browse",
+                            "frame-width": "0",
+                            "origin": "210, 80",
+                            "round-radius": "0",
+                            "size": "100, 20",
+                            "title": "Browse..."
+                        }
+                    },
+                    "CTextLabel": {
+                        "attributes": {
+                            "class": "CTextLabel",
+                            "origin": "10, 110",
+                            "size": "100, 20",
+                            "text-alignment": "left",
+                            "title": "Status:"
+                        }
+                    },
+                    "CTextLabel": {
+                        "attributes": {
+                            "class": "CTextLabel",
+                            "control-tag": "Status",
+                            "origin": "20, 130",
+                            "size": "290, 20",
+                            "text-alignment": "left",
+                            "title": "Loading..."
+                        }
+                    }
+                }
+            }
+        },
+        "control-tags": {
+            "URL": "1000",
+            "Connect": "1001",
+            "MapPath": "1002",
+            "Browse": "1003",
+            "Status": "1004"
+        }
+    }
+}

@@ -29,5 +29,13 @@
 
 #define LampctlVST3Category Steinberg::Vst::PlugType::kFxInstrument
 
+#define MSG_ID_CONNECT      "connect"
+#define MSG_ID_SET_MAP_FILE "set_map_file"
+#define MSG_ID_STATUS       "status"
+
+#define MSG_ATTR_URL         "url"
+#define MSG_ATTR_PATH        "path"
+#define MSG_ATTR_DESCRIPTION "description"
+
 static const Steinberg::FUID kLampctlProcessorUID (0x605D8D9A, 0xB4E15C49, 0xADF0A282, 0xDD62978A);
 static const Steinberg::FUID kLampctlControllerUID (0x89E36D93, 0xF2A55854, 0x8609F7C7, 0x2DEA89F9);

@@ -22,9 +22,12 @@
  * IN THE SOFTWARE.
  */
 
+#include "public.sdk/source/vst/utility/stringconvert.h"
 #include "vstgui/lib/cstring.h"
 
+#include "lampctlcids.h"
 #include "lampctlcontroller.h"
+#include "lampctlconnectioncontroller.h"
 
 using namespace Steinberg;
 using namespace Steinberg::Vst;
@@ -33,8 +36,6 @@ using namespace VSTGUI;
 
 tresult LampctlController::initialize(FUnknown *context)
 {
-    mTextLabel = nullptr;
-
     tresult result = EditControllerEx1::initialize(context);
     if (result != kResultOk) {
         return result;
@@ -49,18 +50,16 @@ tresult LampctlController::notify(IMessage *message)
         return kInvalidArgument;
     }
 
-    if (!strcmp(message->getMessageID(), "test") && mTextLabel) {
-
-        TChar buffer[256];
-        if (message->getAttributes()->getString("Text", buffer, sizeof(buffer)) == kResultOk) {
-            char8 cstr[256];
-            Steinberg::String tmp (buffer);
-            tmp.copyTo8 (cstr, 0, 255);
-            mTextLabel->setText(cstr);
-            return kResultOk;
+    if (!strcmp(message->getMessageID(), MSG_ID_STATUS)) {
+        TChar description[256] = {0};
+        if (message->getAttributes()->getString(MSG_ATTR_DESCRIPTION,
+                                                description,
+                                                sizeof(description) / sizeof(TChar)) == kResultOk) {
+            mStatus = UTF8String(VST3::StringConvert::convert(description));
+            for (auto e : mConnectionControllers) {
+                e->setStatus(mStatus);
+            }
         }
-
-        return kResultOk;
     }
 
     return kResultFalse;
@@ -69,26 +68,63 @@ tresult LampctlController::notify(IMessage *message)
 IPlugView *LampctlController::createView(FIDString name)
 {
     if (FIDStringsEqual(name, ViewType::kEditor)) {
-        return new VST3Editor(this, "Editor", "plug.uidesc");
+        UIDescription *description = new UIDescription("plug.uidesc");
+        if (description->parse()) {
+            return new VST3Editor(description, this, "Editor");
+        }
     }
 
     return nullptr;
 }
 
-CView *LampctlController::createCustomView(VSTGUI::UTF8StringPtr name,
-                                           const VSTGUI::UIAttributes& attributes,
-                                           const VSTGUI::IUIDescription* description,
-                                           VSTGUI::VST3Editor* editor)
+IController *LampctlController::createSubController(VSTGUI::UTF8StringPtr name,
+                                                    const VSTGUI::IUIDescription *,
+                                                    VSTGUI::VST3Editor *)
 {
-    if (name && strcmp(name, "TextLabel") == 0) {
-        CRect size;
-        mTextLabel = new CTextLabel(size);
-        return mTextLabel;
+    if (FIDStringsEqual(name, "ConnectionController")) {
+        auto connectionController = new LampctlConnectionController(this);
+        mConnectionControllers.push_back(connectionController);
+        return connectionController;
     }
+
     return nullptr;
 }
 
-void LampctlController::willClose(VST3Editor *editor)
+void LampctlController::connect(const VSTGUI::UTF8String &url)
 {
-    mTextLabel = nullptr;
+    //...
+}
+
+void LampctlController::setMapPath(const VSTGUI::UTF8String &mapPath)
+{
+    mMapPath = mapPath;
+
+    // Send a message to the processor indicating the map file has changed
+    IMessage *message = allocateMessage();
+    if (message) {
+        FReleaser msgReleaser(message);
+        message->setMessageID(MSG_ID_SET_MAP_FILE);
+        TChar tPath[256] = {0};
+        if (VST3::StringConvert::convert(mMapPath.getString(),
+                                         tPath,
+                                         sizeof(tPath) / sizeof(TChar))) {
+            message->getAttributes()->setString(MSG_ATTR_PATH, tPath);
+            sendMessage(message);
+        }
+    }
+
+    // Update each of the controllers
+    for (auto e : mConnectionControllers) {
+        e->setStatus(mMapPath);
+    }
+}
+
+void LampctlController::removeConnectionController(LampctlConnectionController *connectionController)
+{
+    auto it = std::find(mConnectionControllers.begin(),
+                        mConnectionControllers.end(),
+                        connectionController);
+    if (it != mConnectionControllers.end()) {
+        mConnectionControllers.erase(it);
+    }
 }
