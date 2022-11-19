@@ -23,6 +23,8 @@ endif()
 
 smtg_add_vst3plugin(lampctl
     resource/plug.uidesc
+    source/lampctlconnectioncontroller.h
+    source/lampctlconnectioncontroller.cpp
     source/lampctlcids.h
     source/lampctlcontroller.h
     source/lampctlcontroller.cpp
