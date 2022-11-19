@@ -22,17 +22,17 @@
  * IN THE SOFTWARE.
  */
 
-#include "public.sdk/source/vst/utility/stringconvert.h"
-#include "vstgui/lib/cstring.h"
-
 #include "lampctlcids.h"
 #include "lampctlcontroller.h"
 #include "lampctlconnectioncontroller.h"
+#include "util.h"
 
 using namespace Steinberg;
 using namespace Steinberg::Vst;
 
 using namespace VSTGUI;
+
+using namespace Util;
 
 tresult LampctlController::initialize(FUnknown *context)
 {
@@ -50,15 +50,14 @@ tresult LampctlController::notify(IMessage *message)
         return kInvalidArgument;
     }
 
-    if (!strcmp(message->getMessageID(), MSG_ID_STATUS)) {
-        TChar description[256] = {0};
-        if (message->getAttributes()->getString(MSG_ATTR_DESCRIPTION,
-                                                description,
-                                                sizeof(description) / sizeof(TChar)) == kResultOk) {
-            mStatus = UTF8String(VST3::StringConvert::convert(description));
-            for (auto e : mConnectionControllers) {
-                e->setStatus(mStatus);
-            }
+    std::string attr;
+    if (isMessageWithAttribute(message,
+                               MSG_ID_STATUS,
+                               MSG_ATTR_DESCRIPTION,
+                               attr)) {
+        mStatus = UTF8String(attr);
+        for (auto e : mConnectionControllers) {
+            e->setStatus(mStatus);
         }
     }
 
@@ -92,18 +91,12 @@ IController *LampctlController::createSubController(VSTGUI::UTF8StringPtr name,
 
 void LampctlController::connect(const VSTGUI::UTF8String &url)
 {
-    IMessage *message = allocateMessage();
-    if (message) {
-        FReleaser msgReleaser(message);
-        message->setMessageID(MSG_ID_CONNECT);
-        TChar tURL[256] = {0};
-        if (VST3::StringConvert::convert(url.getString(),
-                                         tURL,
-                                         sizeof(tURL) / sizeof(TChar))) {
-            message->getAttributes()->setString(MSG_ATTR_URL, tURL);
-            sendMessage(message);
-        }
-    }
+    sendMessageWithAttribute(
+        this,
+        MSG_ID_CONNECT,
+        MSG_ATTR_URL,
+        url.getString()
+    );
 }
 
 const UTF8String &LampctlController::getMapPath() const
@@ -115,23 +108,15 @@ void LampctlController::setMapPath(const VSTGUI::UTF8String &mapPath)
 {
     mMapPath = mapPath;
 
-    // Send a message to the processor indicating the map file has changed
-    IMessage *message = allocateMessage();
-    if (message) {
-        FReleaser msgReleaser(message);
-        message->setMessageID(MSG_ID_SET_MAP_FILE);
-        TChar tPath[256] = {0};
-        if (VST3::StringConvert::convert(mMapPath.getString(),
-                                         tPath,
-                                         sizeof(tPath) / sizeof(TChar))) {
-            message->getAttributes()->setString(MSG_ATTR_PATH, tPath);
-            sendMessage(message);
-        }
-    }
+    sendMessageWithAttribute(
+        this,
+        MSG_ID_SET_MAP_FILE,
+        MSG_ATTR_PATH,
+        mMapPath.getString()
+    );
 
-    // Update each of the controllers
     for (auto e : mConnectionControllers) {
-        e->setStatus(mMapPath);
+        e->setMapPath(mMapPath);
     }
 }
 

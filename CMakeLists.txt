@@ -35,6 +35,8 @@ smtg_add_vst3plugin(lampctl
     source/session.cpp
     source/socket.h
     source/socket.cpp
+    source/util.h
+    source/util.cpp
 )
 
 target_link_libraries(lampctl
