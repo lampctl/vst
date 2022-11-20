@@ -26,7 +26,7 @@
 
 #include "session.h"
 
-const char *gApiPath = "/api/registers/ws";
+const char *gApiPath = "/api/ws";
 
 Session::Session(const std::string &host,
                  const std::string &port,
