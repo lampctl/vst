@@ -39,7 +39,7 @@ public:
 
     Session(const std::string &host,
             const std::string &port,
-            std::function<void(const std::string &)> errorHandler,
+            std::function<void(const std::string &)> statusHandler,
             boost::asio::io_context &context);
 
     void run();
@@ -61,7 +61,7 @@ private:
     std::string mHost;
     std::string mPort;
 
-    std::function<void(const std::string &)> mErrorHandler;
+    std::function<void(const std::string &)> mStatusHandler;
 
     boost::asio::ip::tcp::resolver mResolver;
     boost::beast::websocket::stream<boost::beast::tcp_stream> mSocket;

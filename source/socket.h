@@ -37,7 +37,7 @@ class Socket
 {
 public:
 
-    Socket(std::function<void(const std::string&)> errorHandler);
+    Socket(std::function<void(const std::string&)> statusHandler);
     ~Socket();
 
     void connect(const std::string &host, const std::string &port);
@@ -47,7 +47,7 @@ public:
 
 private:
 
-    std::function<void(const std::string &)> mErrorHandler;
+    std::function<void(const std::string &)> mStatusHandler;
 
     boost::thread *mThread;
     boost::asio::io_context mContext;

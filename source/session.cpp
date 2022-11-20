@@ -30,11 +30,11 @@ const char *gApiPath = "/api/ws";
 
 Session::Session(const std::string &host,
                  const std::string &port,
-                 std::function<void(const std::string &)> errorHandler,
+                 std::function<void(const std::string &)> statusHandler,
                  boost::asio::io_context &context)
     : mHost(host)
     , mPort(port)
-    , mErrorHandler(errorHandler)
+    , mStatusHandler(statusHandler)
     , mResolver(context)
     , mSocket(context)
 {}
@@ -77,7 +77,7 @@ void Session::onResolve(boost::beast::error_code ec,
                         boost::asio::ip::tcp::resolver::results_type results)
 {
     if (ec) {
-        mErrorHandler(ec.message());
+        mStatusHandler(ec.message());
         return;
     }
 
@@ -95,7 +95,7 @@ void Session::onConnect(boost::beast::error_code ec,
                         boost::asio::ip::tcp::resolver::results_type::endpoint_type)
 {
     if (ec) {
-        mErrorHandler(ec.message());
+        mStatusHandler(ec.message());
         return;
     }
 
@@ -114,9 +114,11 @@ void Session::onConnect(boost::beast::error_code ec,
 void Session::onHandshake(boost::beast::error_code ec)
 {
     if (ec) {
-        mErrorHandler(ec.message());
+        mStatusHandler(ec.message());
         return;
     }
+
+    mStatusHandler("Connected.");
 
     read();
 }
@@ -135,7 +137,7 @@ void Session::read()
 void Session::onRead(boost::beast::error_code ec, std::size_t)
 {
     if (ec) {
-        mErrorHandler(ec.message());
+        mStatusHandler(ec.message());
         return;
     }
 
@@ -145,13 +147,13 @@ void Session::onRead(boost::beast::error_code ec, std::size_t)
 void Session::onWrite(boost::beast::error_code ec, std::size_t)
 {
     if (ec) {
-        mErrorHandler(ec.message());
+        mStatusHandler(ec.message());
     }
 }
 
 void Session::onClose(boost::beast::error_code ec)
 {
     if (ec) {
-        mErrorHandler(ec.message());
+        mStatusHandler(ec.message());
     }
 }

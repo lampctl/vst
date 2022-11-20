@@ -28,8 +28,8 @@
 
 #include "socket.h"
 
-Socket::Socket(std::function<void(const std::string&)> errorHandler)
-    : mErrorHandler(errorHandler)
+Socket::Socket(std::function<void(const std::string&)> statusHandler)
+    : mStatusHandler(statusHandler)
     , mThread(nullptr)
 {}
 
