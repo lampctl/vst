@@ -26,6 +26,7 @@
 
 #include <functional>
 #include <memory>
+#include <queue>
 #include <string>
 
 #include <boost/asio/io_context.hpp>
@@ -54,6 +55,7 @@ private:
                    boost::asio::ip::tcp::resolver::results_type::endpoint_type);
     void onHandshake(boost::beast::error_code ec);
     void read();
+    void write();
     void onRead(boost::beast::error_code ec, std::size_t);
     void onWrite(boost::beast::error_code ec, std::size_t);
     void onClose(boost::beast::error_code ec);
@@ -66,4 +68,7 @@ private:
     boost::asio::ip::tcp::resolver mResolver;
     boost::beast::websocket::stream<boost::beast::tcp_stream> mSocket;
     boost::beast::flat_buffer mBuffer;
+
+    bool mIsWritePending;
+    std::queue<std::string> mWriteQueue;
 };

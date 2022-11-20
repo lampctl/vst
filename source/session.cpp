@@ -37,6 +37,7 @@ Session::Session(const std::string &host,
     , mStatusHandler(statusHandler)
     , mResolver(context)
     , mSocket(context)
+    , mIsWritePending(false)
 {}
 
 void Session::run()
@@ -53,13 +54,12 @@ void Session::run()
 
 void Session::send(const std::string &json)
 {
-    mSocket.async_write(
-        boost::asio::buffer(json),
-        boost::beast::bind_front_handler(
-            &Session::onWrite,
-            shared_from_this()
-        )
-    );
+    mWriteQueue.push(json);
+
+    if (!mIsWritePending) {
+        write();
+    }
+
 }
 
 void Session::close()
@@ -134,6 +134,22 @@ void Session::read()
     );
 }
 
+void Session::write()
+{
+    std::string json = mWriteQueue.front();
+    mWriteQueue.pop();
+
+    mSocket.async_write(
+        boost::asio::buffer(json),
+        boost::beast::bind_front_handler(
+            &Session::onWrite,
+            shared_from_this()
+        )
+    );
+
+    mIsWritePending = true;
+}
+
 void Session::onRead(boost::beast::error_code ec, std::size_t)
 {
     if (ec) {
@@ -146,8 +162,15 @@ void Session::onRead(boost::beast::error_code ec, std::size_t)
 
 void Session::onWrite(boost::beast::error_code ec, std::size_t)
 {
+    mIsWritePending = false;
+
     if (ec) {
         mStatusHandler(ec.message());
+        return;
+    }
+
+    if (mWriteQueue.size()) {
+        write();
     }
 }
 
