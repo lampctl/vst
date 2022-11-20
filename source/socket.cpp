@@ -40,7 +40,7 @@ Socket::~Socket()
 
 void Socket::connect(const std::string &host, const std::string &port)
 {
-    mSession = std::make_shared<Session>(host, port, mErrorHandler, mContext);
+    mSession = std::make_shared<Session>(host, port, mStatusHandler, mContext);
 
     mContext.restart();
     mContext.post(boost::bind(&Session::run, mSession));
