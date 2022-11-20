@@ -104,6 +104,11 @@ const UTF8String &LampctlController::getMapPath() const
     return mMapPath;
 }
 
+const UTF8String &LampctlController::getStatus() const
+{
+    return mStatus;
+}
+
 void LampctlController::setMapPath(const VSTGUI::UTF8String &mapPath)
 {
     mMapPath = mapPath;

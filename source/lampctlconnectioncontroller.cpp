@@ -93,6 +93,7 @@ CView *LampctlConnectionController::verifyView(CView* view,
             break;
         case kStatusTag:
             mStatus = dynamic_cast<CTextLabel *>(view);
+            mStatus->setText(mController->getStatus());
             break;
         }
     }

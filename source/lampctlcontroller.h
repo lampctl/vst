@@ -64,6 +64,8 @@ public:
     void connect(const VSTGUI::UTF8String &ip);
 
     const VSTGUI::UTF8String &getMapPath() const;
+    const VSTGUI::UTF8String &getStatus() const;
+
     void setMapPath(const VSTGUI::UTF8String &mapPath);
 
     void removeConnectionController(LampctlConnectionController *connectionController);
