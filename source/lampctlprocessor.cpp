@@ -98,7 +98,7 @@ tresult LampctlProcessor::process(ProcessData &data)
                     // Create an event and add it to the provider map
                     auto lamp = lampIt->second;
                     auto obj = lamp.obj;
-                    obj["value"] = eventValue;
+                    obj["state"] = eventValue;
                     eventsByProvider[lamp.provider].push_back(obj);
                 }
             }
@@ -188,8 +188,8 @@ void LampctlProcessor::sendEvents(const std::string &provider,
                                   const boost::json::array &events)
 {
     boost::json::object data;
-    data["provider"] = provider;
-    data["states"] = events;
+    data["provider_id"] = provider;
+    data["changes"] = events;
 
     boost::json::object root;
     root["data"] = data;
