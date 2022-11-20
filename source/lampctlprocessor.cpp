@@ -128,12 +128,11 @@ tresult LampctlProcessor::notify(IMessage *message)
 
     if (isMessageWithAttribute(message, MSG_ID_SET_MAP_FILE, MSG_ATTR_PATH, attr)) {
         std::string error;
-        if (!loadMap(attr, error)) {
-            sendMessageWithAttribute(this,
-                                     MSG_ID_STATUS,
-                                     MSG_ATTR_DESCRIPTION,
-                                     error);
-        }
+        bool success = loadMap(attr, error);
+        sendMessageWithAttribute(this,
+                                 MSG_ID_STATUS,
+                                 MSG_ATTR_DESCRIPTION,
+                                 success ? "Loaded map." : ("Map: " + error));
         return kResultOk;
     }
 
