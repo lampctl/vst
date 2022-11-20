@@ -22,38 +22,29 @@
  * IN THE SOFTWARE.
  */
 
+#include <fstream>
+
 #include "pluginterfaces/vst/ivstevents.h"
 
 #include "lampctlcids.h"
 #include "lampctlprocessor.h"
+#include "util.h"
 
 using namespace Steinberg;
 using namespace Steinberg::Vst;
 
-#include <ctime>
-FILE *fp;
-#define DBG(m, ...) \
-    { \
-      char buff[1024]; \
-      snprintf(buff, sizeof(buff), m, __VA_ARGS__); \
-      strncat(buff, "\n", sizeof(buff) - strlen(buff) - 1); \
-      fwrite(buff, sizeof(char), strlen(buff), fp); \
-      fflush(fp); \
-    }
+using namespace Util;
 
 LampctlProcessor::LampctlProcessor()
+    : mSocket(nullptr)
 {
     setControllerClass(kLampctlControllerUID);
-
-    fp = fopen("F:\\debug.txt", "w");
 }
 
 LampctlProcessor::~LampctlProcessor()
-{
-    fclose(fp);
-}
+{}
 
-Steinberg::tresult LampctlProcessor::initialize(Steinberg::FUnknown *context)
+tresult LampctlProcessor::initialize(FUnknown *context)
 {
     tresult result = AudioEffect::initialize(context);
     if (result != kResultOk) {
@@ -62,17 +53,26 @@ Steinberg::tresult LampctlProcessor::initialize(Steinberg::FUnknown *context)
 
     addEventInput(STR16("Event In"), 1);
 
+    mSocket = new Socket([this](const std::string &description) {
+        sendMessageWithAttribute(this,
+                                 MSG_ID_STATUS,
+                                 MSG_ATTR_DESCRIPTION,
+                                 description);
+    });
+
     return kResultOk;
 }
 
-Steinberg::tresult LampctlProcessor::terminate()
+tresult LampctlProcessor::terminate()
 {
     return AudioEffect::terminate();
 }
 
-Steinberg::tresult LampctlProcessor::process(Steinberg::Vst::ProcessData &data)
+tresult LampctlProcessor::process(ProcessData &data)
 {
-    // Process each of the events
+    std::map<std::string, boost::json::array> eventsByProvider;
+
+    // Process input events one by one
     IEventList *inputEvents = data.inputEvents;
     if (inputEvents) {
         int32 numEvents = inputEvents->getEventCount();
@@ -80,39 +80,119 @@ Steinberg::tresult LampctlProcessor::process(Steinberg::Vst::ProcessData &data)
             Event event;
             if (inputEvents->getEvent(i, event) == kResultOk) {
 
-                if (event.type == Event::kNoteOnEvent) {
-                    DBG("Note ON");
-                    DBG("  Channel: %d", event.noteOn.channel);
-                    DBG("  Pitch: %d", event.noteOn.pitch);
-                    DBG("  Tuning: %f", event.noteOn.tuning);
-                    DBG("  Velocity: %f", event.noteOn.velocity);
-                    DBG("  Note ID: %ld", event.noteOn.noteId);
-                    DBG("");
+                // We are only interested in note on / off events
+                if (event.type != Event::kNoteOnEvent &&
+                        event.type != Event::kNoteOffEvent) {
+                    continue;
                 }
 
-                if (event.type == Event::kNoteOffEvent) {
-                    DBG("Note OFF");
-                    DBG("  Channel: %d", event.noteOff.channel);
-                    DBG("  Pitch: %d", event.noteOff.pitch);
-                    DBG("  Tuning: %f", event.noteOff.tuning);
-                    DBG("  Velocity: %f", event.noteOff.velocity);
-                    DBG("  Note ID: %ld", event.noteOff.noteId);
-                    DBG("");
+                // Determine the pitch and value
+                int eventPitch = event.type == Event::kNoteOnEvent ?
+                            event.noteOn.pitch :
+                            event.noteOff.pitch;
+                bool eventValue = event.type == Event::kNoteOnEvent;
+
+                // Attempt to find the lamp by index
+                if (auto lampIt = mMap.find(eventPitch); lampIt != mMap.end()) {
+
+                    // Create an event and add it to the provider map
+                    auto lamp = lampIt->second;
+                    auto obj = lamp.obj;
+                    obj["value"] = eventValue;
+                    eventsByProvider[lamp.provider].push_back(obj);
                 }
             }
-
-            /*
-            // Send a message to the peer
-            IMessage *message = allocateMessage();
-            if (message) {
-                FReleaser msgReleaser(message);
-                message->setMessageID("test");
-                message->getAttributes()->setString("Text", L"test");
-                sendMessage(message);
-            }
-            */
         }
     }
 
+    // If there were events, send them
+    for (const auto &kv : eventsByProvider) {
+        sendEvents(kv.first, kv.second);
+    }
+
     return kResultOk;
+}
+
+tresult LampctlProcessor::notify(IMessage *message)
+{
+    if (!message) {
+        return kInvalidArgument;
+    }
+
+    std::string attr;
+
+    if (isMessageWithAttribute(message, MSG_ID_CONNECT, MSG_ATTR_IP, attr)) {
+        mSocket->connect(attr, "80");
+        return kResultOk;
+    }
+
+    if (isMessageWithAttribute(message, MSG_ID_SET_MAP_FILE, MSG_ATTR_PATH, attr)) {
+        std::string error;
+        if (!loadMap(attr, error)) {
+            sendMessageWithAttribute(this,
+                                     MSG_ID_STATUS,
+                                     MSG_ATTR_DESCRIPTION,
+                                     error);
+        }
+        return kResultOk;
+    }
+
+    return kResultFalse;
+}
+
+bool LampctlProcessor::loadMap(const std::string &filename, std::string &error)
+{
+    std::map<int, Lamp> map;
+
+    std::ifstream ifs(filename);
+    if (!ifs.good()) {
+        error = "unable to open map file";
+        return false;
+    }
+
+    // Load the file contents
+    std::string content((std::istreambuf_iterator<char>(ifs)),
+                        (std::istreambuf_iterator<char>()));
+
+    // Parse the JSON file
+    boost::json::error_code ec;
+    auto v = boost::json::parse(content, ec);
+    if (ec) {
+        error = ec.message();
+        return false;
+    }
+
+    // For each value, create a lamp and assign it
+    try {
+        auto root = v.as_object();
+        for (const auto &kv : root) {
+            int key = std::stoi(kv.key());
+            auto obj = kv.value().as_object();
+            auto provider = boost::json::value_to<std::string>(obj["provider_id"]);
+            obj.erase("provider_id");
+            map.insert({key, Lamp{provider, obj}});
+        }
+
+    } catch (std::exception e) {
+        error = e.what();
+        return false;
+    }
+
+    // Assign the new map
+    mMap = map;
+
+    return true;
+}
+
+void LampctlProcessor::sendEvents(const std::string &provider,
+                                  const boost::json::array &events)
+{
+    boost::json::object data;
+    data["provider"] = provider;
+    data["states"] = events;
+
+    boost::json::object root;
+    root["data"] = data;
+
+    mSocket->send(boost::json::serialize(root));
 }

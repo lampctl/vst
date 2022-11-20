@@ -24,6 +24,10 @@
 
 #pragma once
 
+#include <map>
+
+#include <boost/json.hpp>
+
 #include "public.sdk/source/vst/vstaudioeffect.h"
 
 #include "socket.h"
@@ -42,9 +46,21 @@ public:
 
     Steinberg::tresult PLUGIN_API initialize(Steinberg::FUnknown *context) SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API terminate() SMTG_OVERRIDE;
+
     Steinberg::tresult PLUGIN_API process(Steinberg::Vst::ProcessData &data) SMTG_OVERRIDE;
+
+    Steinberg::tresult PLUGIN_API notify(Steinberg::Vst::IMessage *message) SMTG_OVERRIDE;
 
 private:
 
+    struct Lamp {
+        std::string provider;
+        boost::json::object obj;
+    };
+
+    bool loadMap(const std::string &filename, std::string &error);
+    void sendEvents(const std::string &provider, const boost::json::array &events);
+
     Socket *mSocket;
+    std::map<int, Lamp> mMap;
 };
