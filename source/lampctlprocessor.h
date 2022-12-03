@@ -47,6 +47,7 @@ public:
     Steinberg::tresult PLUGIN_API initialize(Steinberg::FUnknown *context) SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API terminate() SMTG_OVERRIDE;
 
+    Steinberg::tresult PLUGIN_API setActive(Steinberg::TBool state) SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API process(Steinberg::Vst::ProcessData &data) SMTG_OVERRIDE;
 
     Steinberg::tresult PLUGIN_API notify(Steinberg::Vst::IMessage *message) SMTG_OVERRIDE;
@@ -63,4 +64,6 @@ private:
 
     Socket *mSocket;
     std::map<int, Lamp> mMap;
+
+    bool mActive;
 };

@@ -37,6 +37,7 @@ using namespace Util;
 
 LampctlProcessor::LampctlProcessor()
     : mSocket(nullptr)
+    , mActive(false)
 {
     setControllerClass(kLampctlControllerUID);
 }
@@ -68,8 +69,18 @@ tresult LampctlProcessor::terminate()
     return AudioEffect::terminate();
 }
 
+tresult LampctlProcessor::setActive(TBool state)
+{
+    mActive = state;
+    return kResultOk;
+}
+
 tresult LampctlProcessor::process(ProcessData &data)
 {
+    if (!mActive) {
+        return kResultOk;
+    }
+
     std::map<std::string, boost::json::array> eventsByProvider;
 
     // Process input events one by one
