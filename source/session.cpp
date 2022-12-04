@@ -30,11 +30,13 @@ const char *gApiPath = "/api/ws";
 
 Session::Session(const std::string &host,
                  const std::string &port,
-                 std::function<void(const std::string &)> statusHandler,
+                 Session::SuccessHandler successHandler,
+                 Session::FailureHandler failureHandler,
                  boost::asio::io_context &context)
     : mHost(host)
     , mPort(port)
-    , mStatusHandler(statusHandler)
+    , mSuccessHandler(successHandler)
+    , mFailureHandler(failureHandler)
     , mResolver(context)
     , mSocket(context)
     , mIsWritePending(false)
@@ -77,7 +79,7 @@ void Session::onResolve(boost::beast::error_code ec,
                         boost::asio::ip::tcp::resolver::results_type results)
 {
     if (ec) {
-        mStatusHandler(ec.message());
+        mFailureHandler(ec.message());
         return;
     }
 
@@ -95,7 +97,7 @@ void Session::onConnect(boost::beast::error_code ec,
                         boost::asio::ip::tcp::resolver::results_type::endpoint_type)
 {
     if (ec) {
-        mStatusHandler(ec.message());
+        mFailureHandler(ec.message());
         return;
     }
 
@@ -114,11 +116,11 @@ void Session::onConnect(boost::beast::error_code ec,
 void Session::onHandshake(boost::beast::error_code ec)
 {
     if (ec) {
-        mStatusHandler(ec.message());
+        mFailureHandler(ec.message());
         return;
     }
 
-    mStatusHandler("Connected.");
+    mSuccessHandler();
 
     read();
 }
@@ -153,7 +155,7 @@ void Session::write()
 void Session::onRead(boost::beast::error_code ec, std::size_t)
 {
     if (ec) {
-        mStatusHandler(ec.message());
+        mFailureHandler(ec.message());
         return;
     }
 
@@ -165,7 +167,7 @@ void Session::onWrite(boost::beast::error_code ec, std::size_t)
     mIsWritePending = false;
 
     if (ec) {
-        mStatusHandler(ec.message());
+        mFailureHandler(ec.message());
         return;
     }
 
@@ -177,6 +179,6 @@ void Session::onWrite(boost::beast::error_code ec, std::size_t)
 void Session::onClose(boost::beast::error_code ec)
 {
     if (ec) {
-        mStatusHandler(ec.message());
+        mFailureHandler(ec.message());
     }
 }

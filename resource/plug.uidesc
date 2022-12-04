@@ -43,7 +43,16 @@
                     "CTextLabel": {
                         "attributes": {
                             "class": "CTextLabel",
-                            "origin": "10, 60",
+                            "control-tag": "ConnectStatus",
+                            "origin": "20, 50",
+                            "size": "290, 20",
+                            "text-alignment": "left"
+                        }
+                    },
+                    "CTextLabel": {
+                        "attributes": {
+                            "class": "CTextLabel",
+                            "origin": "10, 80",
                             "size": "300, 20",
                             "text-alignment": "left",
                             "title": "Map file:"
@@ -53,10 +62,9 @@
                         "attributes": {
                             "class": "CTextLabel",
                             "control-tag": "MapPath",
-                            "origin": "20, 80",
+                            "origin": "20, 100",
                             "size": "180, 20",
-                            "text-alignment": "left",
-                            "title": "No file selected"
+                            "text-alignment": "left"
                         }
                     },
                     "CTextButton": {
@@ -64,7 +72,7 @@
                             "class": "CTextButton",
                             "control-tag": "Browse",
                             "frame-width": "0",
-                            "origin": "210, 80",
+                            "origin": "210, 100",
                             "round-radius": "0",
                             "size": "100, 20",
                             "title": "Browse..."
@@ -73,20 +81,10 @@
                     "CTextLabel": {
                         "attributes": {
                             "class": "CTextLabel",
-                            "origin": "10, 110",
-                            "size": "100, 20",
-                            "text-alignment": "left",
-                            "title": "Status:"
-                        }
-                    },
-                    "CTextLabel": {
-                        "attributes": {
-                            "class": "CTextLabel",
-                            "control-tag": "Status",
-                            "origin": "20, 130",
+                            "control-tag": "MapStatus",
+                            "origin": "20, 120",
                             "size": "290, 20",
-                            "text-alignment": "left",
-                            "title": "Loading..."
+                            "text-alignment": "left"
                         }
                     }
                 }
@@ -95,9 +93,10 @@
         "control-tags": {
             "IP": "1000",
             "Connect": "1001",
-            "MapPath": "1002",
-            "Browse": "1003",
-            "Status": "1004"
+            "ConnectStatus": "1002",
+            "MapPath": "1003",
+            "Browse": "1004",
+            "MapStatus": "1005"
         }
     }
 }

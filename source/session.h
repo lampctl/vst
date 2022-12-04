@@ -38,9 +38,13 @@ class Session : public std::enable_shared_from_this<Session>
 {
 public:
 
+    typedef std::function<void()> SuccessHandler;
+    typedef std::function<void(const std::string &)> FailureHandler;
+
     Session(const std::string &host,
             const std::string &port,
-            std::function<void(const std::string &)> statusHandler,
+            SuccessHandler successHandler,
+            FailureHandler failureHandler,
             boost::asio::io_context &context);
 
     void run();
@@ -63,7 +67,8 @@ private:
     std::string mHost;
     std::string mPort;
 
-    std::function<void(const std::string &)> mStatusHandler;
+    SuccessHandler mSuccessHandler;
+    FailureHandler mFailureHandler;
 
     boost::asio::ip::tcp::resolver mResolver;
     boost::beast::websocket::stream<boost::beast::tcp_stream> mSocket;

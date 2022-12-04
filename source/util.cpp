@@ -31,10 +31,10 @@ using namespace Steinberg::Vst;
 
 namespace Util {
 
-tresult sendMessageWithAttribute(Steinberg::Vst::ComponentBase *componentBase,
-                                 const FIDString id,
-                                 const IAttributeList::AttrID attrId,
-                                 const std::string &attrValue)
+tresult sendMessage(Steinberg::Vst::ComponentBase *componentBase,
+                    const FIDString id,
+                    const IAttributeList::AttrID attrId,
+                    const std::string &attrValue)
 {
     IMessage *message = componentBase->allocateMessage();
     if (!message) {
@@ -45,19 +45,22 @@ tresult sendMessageWithAttribute(Steinberg::Vst::ComponentBase *componentBase,
     FReleaser msgReleaser(message);
     message->setMessageID(id);
 
-    // Convert the supplied attribute
-    TChar tAttr[256] = {0};
-    if (!VST3::StringConvert::convert(attrValue,
-                                      tAttr,
-                                      sizeof(tAttr) / sizeof(TChar))) {
-        return kResultFalse;
+    if (attrId) {
+
+        // Convert the supplied attribute
+        TChar tAttr[256] = {0};
+        if (!VST3::StringConvert::convert(attrValue,
+                                          tAttr,
+                                          sizeof(tAttr) / sizeof(TChar))) {
+            return kResultFalse;
+        }
+
+        // Assign the attribute
+        message->getAttributes()->setString(attrId, tAttr);
     }
 
-    // Assign the attribute and send it
-    message->getAttributes()->setString(attrId, tAttr);
-    componentBase->sendMessage(message);
-
-    return kResultOk;
+    // Send the message
+    return componentBase->sendMessage(message);
 }
 
 bool isMessageWithAttribute(IMessage *message,

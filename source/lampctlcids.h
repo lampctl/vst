@@ -29,10 +29,17 @@
 
 #define LampctlVST3Category Steinberg::Vst::PlugType::kFxInstrument
 
+// Messages sent from the controller(s) to the processor
 #define MSG_ID_CONNECT      "connect"
 #define MSG_ID_SET_MAP_FILE "set_map_file"
-#define MSG_ID_STATUS       "status"
 
+// Messages sent from the processor to the controller(s)
+#define MSG_ID_CONNECT_SUCCEEDED  "connect_succeeded"
+#define MSG_ID_CONNECT_FAILED     "connect_failed"
+#define MSG_ID_LOAD_MAP_SUCCEEDED "load_map_succeeded"
+#define MSG_ID_LOAD_MAP_FAILED    "load_map_failed"
+
+// Message attributes
 #define MSG_ATTR_IP          "ip"
 #define MSG_ATTR_PATH        "path"
 #define MSG_ATTR_DESCRIPTION "description"

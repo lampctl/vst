@@ -44,7 +44,7 @@ class LampctlController :
 {
 public:
 
-    LampctlController() = default;
+    LampctlController();
     ~LampctlController() SMTG_OVERRIDE = default;
 
     static Steinberg::FUnknown *createInstance(void *)
@@ -61,19 +61,25 @@ public:
                                              const VSTGUI::IUIDescription *description,
                                              VSTGUI::VST3Editor *editor) SMTG_OVERRIDE;
 
-    void connect(const VSTGUI::UTF8String &ip);
-
+    const VSTGUI::UTF8String &getConnectStatus() const;
     const VSTGUI::UTF8String &getMapPath() const;
-    const VSTGUI::UTF8String &getStatus() const;
+    const VSTGUI::UTF8String &getMapStatus() const;
 
-    void setMapPath(const VSTGUI::UTF8String &mapPath);
+    void setIP(const VSTGUI::UTF8String &ip);
+
+    void connectToServer();
+    void browse();
 
     void removeConnectionController(LampctlConnectionController *connectionController);
 
 private:
 
+    void updateControllers();
+
     std::list<LampctlConnectionController *> mConnectionControllers;
 
+    VSTGUI::UTF8String mIP;
+    VSTGUI::UTF8String mConnectStatus;
     VSTGUI::UTF8String mMapPath;
-    VSTGUI::UTF8String mStatus;
+    VSTGUI::UTF8String mMapStatus;
 };

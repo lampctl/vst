@@ -24,34 +24,11 @@
 
 #pragma once
 
-#include <functional>
-#include <memory>
-#include <string>
+enum {
+    kBrightnessId = 0
 
-#include <boost/asio/io_context.hpp>
-#include <boost/thread.hpp>
-
-#include "session.h"
-
-class Socket
-{
-public:
-
-    Socket(Session::SuccessHandler successHandler,
-           Session::FailureHandler failureHandler);
-    ~Socket();
-
-    void connect(const std::string &host, const std::string &port);
-    void disconnect();
-
-    void send(const std::string &json);
-
-private:
-
-    Session::SuccessHandler mSuccessHandler;
-    Session::FailureHandler mFailureHandler;
-
-    boost::thread *mThread;
-    boost::asio::io_context mContext;
-    std::shared_ptr<Session> mSession;
+    // TODO
+    //kRColorId,
+    //kGColorId,
+    //kBColorId
 };

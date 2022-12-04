@@ -28,8 +28,10 @@
 
 #include "socket.h"
 
-Socket::Socket(std::function<void(const std::string&)> statusHandler)
-    : mStatusHandler(statusHandler)
+Socket::Socket(Session::SuccessHandler successHandler,
+               Session::FailureHandler failureHandler)
+    : mSuccessHandler(successHandler)
+    , mFailureHandler(failureHandler)
     , mThread(nullptr)
 {}
 
@@ -40,7 +42,7 @@ Socket::~Socket()
 
 void Socket::connect(const std::string &host, const std::string &port)
 {
-    mSession = std::make_shared<Session>(host, port, mStatusHandler, mContext);
+    mSession = std::make_shared<Session>(host, port, mSuccessHandler, mFailureHandler, mContext);
 
     mContext.restart();
     mContext.post(boost::bind(&Session::run, mSession));

@@ -54,12 +54,17 @@ tresult LampctlProcessor::initialize(FUnknown *context)
 
     addEventInput(STR16("Event In"), 1);
 
-    mSocket = new Socket([this](const std::string &description) {
-        sendMessageWithAttribute(this,
-                                 MSG_ID_STATUS,
-                                 MSG_ATTR_DESCRIPTION,
-                                 description);
-    });
+    mSocket = new Socket(
+        [this]() {
+            ::sendMessage(this, MSG_ID_CONNECT_SUCCEEDED);
+        },
+        [this](const std::string &description) {
+            ::sendMessage(this,
+                          MSG_ID_CONNECT_FAILED,
+                          MSG_ATTR_DESCRIPTION,
+                          description);
+        }
+    );
 
     return kResultOk;
 }
@@ -139,12 +144,14 @@ tresult LampctlProcessor::notify(IMessage *message)
 
     if (isMessageWithAttribute(message, MSG_ID_SET_MAP_FILE, MSG_ATTR_PATH, attr)) {
         std::string error;
-        bool success = loadMap(attr, error);
-        sendMessageWithAttribute(this,
-                                 MSG_ID_STATUS,
+        if (loadMap(attr, error)) {
+            return ::sendMessage(this, MSG_ID_LOAD_MAP_SUCCEEDED);
+        } else {
+            return ::sendMessage(this,
+                                 MSG_ID_LOAD_MAP_FAILED,
                                  MSG_ATTR_DESCRIPTION,
-                                 success ? "Loaded map." : ("Map: " + error));
-        return kResultOk;
+                                 error);
+        }
     }
 
     return kResultFalse;

@@ -25,7 +25,11 @@
 #include "lampctlcids.h"
 #include "lampctlcontroller.h"
 #include "lampctlconnectioncontroller.h"
+#include "lampctlparamids.h"
 #include "util.h"
+
+#include "vstgui/lib/cfileselector.h"
+#include "vstgui/plugin-bindings/vst3editor.h"
 
 using namespace Steinberg;
 using namespace Steinberg::Vst;
@@ -34,12 +38,26 @@ using namespace VSTGUI;
 
 using namespace Util;
 
+LampctlController::LampctlController()
+    : mConnectStatus("Not connected")
+    , mMapStatus("No file loaded")
+{}
+
 tresult LampctlController::initialize(FUnknown *context)
 {
     tresult result = EditControllerEx1::initialize(context);
     if (result != kResultOk) {
         return result;
     }
+
+    parameters.addParameter(
+        STR16("Brightness"),
+        nullptr,
+        1, // step count
+        0, // default value
+        ParameterInfo::kCanAutomate,
+        kBrightnessId
+    );
 
     return result;
 }
@@ -50,15 +68,40 @@ tresult LampctlController::notify(IMessage *message)
         return kInvalidArgument;
     }
 
+    // Connection succeeded
+    if (!strcmp(message->getMessageID(), MSG_ID_CONNECT_SUCCEEDED)) {
+        mConnectStatus = "Connected";
+        updateControllers();
+        return kResultOk;
+    }
+
+    // Load map succeeded
+    if (!strcmp(message->getMessageID(), MSG_ID_LOAD_MAP_SUCCEEDED)) {
+        mMapStatus = "Map loaded";
+        updateControllers();
+        return kResultOk;
+    }
+
     std::string attr;
+
+    // Connection failed
     if (isMessageWithAttribute(message,
-                               MSG_ID_STATUS,
+                               MSG_ID_CONNECT_FAILED,
                                MSG_ATTR_DESCRIPTION,
                                attr)) {
-        mStatus = UTF8String(attr);
-        for (auto e : mConnectionControllers) {
-            e->setStatus(mStatus);
-        }
+        mConnectStatus = UTF8String(attr);
+        updateControllers();
+        return kResultOk;
+    }
+
+    // Load map failed
+    if (isMessageWithAttribute(message,
+                               MSG_ID_LOAD_MAP_FAILED,
+                               MSG_ATTR_DESCRIPTION,
+                               attr)) {
+        mMapStatus = UTF8String(attr);
+        updateControllers();
+        return kResultOk;
     }
 
     return kResultFalse;
@@ -89,14 +132,9 @@ IController *LampctlController::createSubController(VSTGUI::UTF8StringPtr name,
     return nullptr;
 }
 
-void LampctlController::connect(const VSTGUI::UTF8String &ip)
+const UTF8String &LampctlController::getConnectStatus() const
 {
-    sendMessageWithAttribute(
-        this,
-        MSG_ID_CONNECT,
-        MSG_ATTR_IP,
-        ip.getString()
-    );
+    return mConnectStatus;
 }
 
 const UTF8String &LampctlController::getMapPath() const
@@ -104,24 +142,42 @@ const UTF8String &LampctlController::getMapPath() const
     return mMapPath;
 }
 
-const UTF8String &LampctlController::getStatus() const
+const UTF8String &LampctlController::getMapStatus() const
 {
-    return mStatus;
+    return mMapStatus;
 }
 
-void LampctlController::setMapPath(const VSTGUI::UTF8String &mapPath)
+void LampctlController::setIP(const VSTGUI::UTF8String &ip)
 {
-    mMapPath = mapPath;
+    mIP = ip;
+}
 
-    sendMessageWithAttribute(
-        this,
-        MSG_ID_SET_MAP_FILE,
-        MSG_ATTR_PATH,
-        mMapPath.getString()
+void LampctlController::connectToServer()
+{
+    ::sendMessage(this,
+                  MSG_ID_CONNECT,
+                  MSG_ATTR_IP,
+                  mIP.getString());
+}
+
+void LampctlController::browse()
+{
+    CNewFileSelector *selector = CNewFileSelector::create(
+        nullptr,
+        CNewFileSelector::kSelectFile
     );
-
-    for (auto e : mConnectionControllers) {
-        e->setMapPath(mMapPath);
+    if (selector) {
+        selector->run([this](CNewFileSelector *selector) {
+            int numSelectedFiles = selector->getNumSelectedFiles();
+            if (numSelectedFiles == 1) {
+                mMapPath = selector->getSelectedFile(0);
+                ::sendMessage(this,
+                              MSG_ID_SET_MAP_FILE,
+                              MSG_ATTR_PATH,
+                              mMapPath.getString());
+            }
+        });
+        selector->forget();
     }
 }
 
@@ -132,5 +188,12 @@ void LampctlController::removeConnectionController(LampctlConnectionController *
                         connectionController);
     if (it != mConnectionControllers.end()) {
         mConnectionControllers.erase(it);
+    }
+}
+
+void LampctlController::updateControllers()
+{
+    for (auto e : mConnectionControllers) {
+        e->update();
     }
 }

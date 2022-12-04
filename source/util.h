@@ -31,18 +31,18 @@
 namespace Util {
 
 /**
- * @brief Sends a message with a single attribute
+ * @brief Sends a message
  * @param componentBase component used for sending the message
  * @param id message ID
- * @param attrId attribute ID
- * @param attrValue attribute value
+ * @param attrId optional attribute ID
+ * @param attrValue optional attribute value
  * @return kResultOk if the message was sent successfully
  */
-Steinberg::tresult sendMessageWithAttribute(
+Steinberg::tresult sendMessage(
     Steinberg::Vst::ComponentBase *componentBase,
     const Steinberg::FIDString id,
-    const Steinberg::Vst::IAttributeList::AttrID attrId,
-    const std::string &attrValue
+    const Steinberg::Vst::IAttributeList::AttrID attrId = nullptr,
+    const std::string &attrValue = std::string()
 );
 
 /**

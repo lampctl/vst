@@ -40,11 +40,12 @@ class LampctlConnectionController : public VSTGUI::IController
 public:
 
     enum {
-        kIPTag      = 1000,
-        kConnectTag = 1001,
-        kMapPathTag = 1002,
-        kBrowseTag  = 1003,
-        kStatusTag  = 1004
+        kIPTag            = 1000,
+        kConnectTag       = 1001,
+        kConnectStatusTag = 1002,
+        kMapPathTag       = 1003,
+        kBrowseTag        = 1004,
+        kMapStatusTag     = 1005
     };
 
     explicit LampctlConnectionController(LampctlController *controller);
@@ -57,16 +58,14 @@ public:
                               const VSTGUI::UIAttributes &attributes,
                               const VSTGUI::IUIDescription *description) override;
 
-    void setMapPath(const VSTGUI::UTF8String &mapPath);
-    void setStatus(const VSTGUI::UTF8String &status);
+    void update();
 
 private:
 
-    void browse();
-
     VSTGUI::CTextEdit *mIP;
+    VSTGUI::CTextLabel *mConnectStatus;
     VSTGUI::CTextLabel *mMapPath;
-    VSTGUI::CTextLabel *mStatus;
+    VSTGUI::CTextLabel *mMapStatus;
 
     LampctlController *mController;
 };

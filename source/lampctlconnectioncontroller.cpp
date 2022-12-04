@@ -25,7 +25,6 @@
 #include <string>
 
 #include "vstgui/lib/controls/ccontrol.h"
-#include "vstgui/lib/cfileselector.h"
 #include "vstgui/uidescription/uiattributes.h"
 
 #include "lampctlcontroller.h"
@@ -35,8 +34,9 @@ using namespace VSTGUI;
 
 LampctlConnectionController::LampctlConnectionController(LampctlController *controller)
     : mIP(nullptr)
+    , mConnectStatus(nullptr)
     , mMapPath(nullptr)
-    , mStatus(nullptr)
+    , mMapStatus(nullptr)
     , mController(controller)
 {}
 
@@ -51,29 +51,15 @@ void LampctlConnectionController::valueChanged(CControl *)
 void LampctlConnectionController::controlEndEdit(CControl *pControl)
 {
     switch (pControl->getTag()) {
+    case kIPTag:
+        mController->setIP(mIP->getText());
+        break;
     case kConnectTag:
-        mController->connect(mIP->getText());
+        mController->connectToServer();
         break;
     case kBrowseTag:
-        browse();
+        mController->browse();
         break;
-    }
-}
-
-void LampctlConnectionController::browse()
-{
-    CNewFileSelector *selector = CNewFileSelector::create(
-        nullptr,
-        CNewFileSelector::kSelectFile
-    );
-    if (selector) {
-        selector->run([this](CNewFileSelector *selector) {
-            int numSelectedFiles = selector->getNumSelectedFiles();
-            if (numSelectedFiles == 1) {
-                mController->setMapPath(selector->getSelectedFile(0));
-            }
-        });
-        selector->forget();
     }
 }
 
@@ -87,13 +73,17 @@ CView *LampctlConnectionController::verifyView(CView* view,
         case kIPTag:
             mIP = dynamic_cast<CTextEdit *>(view);
             break;
+        case kConnectStatusTag:
+            mConnectStatus = dynamic_cast<CTextLabel *>(view);
+            mConnectStatus->setText(mController->getConnectStatus());
+            break;
         case kMapPathTag:
             mMapPath = dynamic_cast<CTextLabel *>(view);
             mMapPath->setText(mController->getMapPath());
             break;
-        case kStatusTag:
-            mStatus = dynamic_cast<CTextLabel *>(view);
-            mStatus->setText(mController->getStatus());
+        case kMapStatusTag:
+            mMapStatus = dynamic_cast<CTextLabel *>(view);
+            mMapStatus->setText(mController->getMapStatus());
             break;
         }
     }
@@ -101,12 +91,9 @@ CView *LampctlConnectionController::verifyView(CView* view,
     return view;
 }
 
-void LampctlConnectionController::setMapPath(const VSTGUI::UTF8String &mapPath)
+void LampctlConnectionController::update()
 {
-    mMapPath->setText(mapPath);
-}
-
-void LampctlConnectionController::setStatus(const UTF8String &status)
-{
-    mStatus->setText(status);
+    mConnectStatus->setText(mController->getConnectStatus());
+    mMapPath->setText(mController->getMapPath());
+    mMapStatus->setText(mController->getMapStatus());
 }

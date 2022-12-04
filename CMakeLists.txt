@@ -29,6 +29,7 @@ smtg_add_vst3plugin(lampctl
     source/lampctlcontroller.h
     source/lampctlcontroller.cpp
     source/lampctlentry.cpp
+    source/lampctlparamids.h
     source/lampctlprocessor.h
     source/lampctlprocessor.cpp
     source/session.h
