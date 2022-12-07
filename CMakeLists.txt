@@ -29,7 +29,6 @@ smtg_add_vst3plugin(lampctl
     source/lampctlcontroller.h
     source/lampctlcontroller.cpp
     source/lampctlentry.cpp
-    source/lampctlparamids.h
     source/lampctlprocessor.h
     source/lampctlprocessor.cpp
     source/session.h
@@ -50,8 +49,6 @@ target_link_libraries(lampctl
 smtg_target_add_plugin_resources(lampctl
     RESOURCES
         resource/plug.uidesc
-        resource/slider_background.png
-        resource/slider_handle.png
 )
 
 smtg_target_configure_version_file(lampctl)

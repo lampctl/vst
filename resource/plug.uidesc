@@ -1,19 +1,11 @@
 {
     "vstgui-ui-description": {
         "version": "1",
-        "bitmaps": {
-            "slider_background": {
-                "path": "slider_background.png"
-            },
-            "slider_handle": {
-                "path": "slider_handle.png"
-            }
-        },
         "templates": {
             "Editor": {
                 "attributes": {
                     "sub-controller": "ConnectionController",
-                    "size": "320, 200"
+                    "size": "320, 160"
                 },
                 "children": {
                     "CTextLabel": {
@@ -93,24 +85,6 @@
                             "origin": "20, 120",
                             "size": "290, 20",
                             "text-alignment": "left"
-                        }
-                    },
-                    "CTextLabel": {
-                        "attributes": {
-                            "class": "CTextLabel",
-                            "origin": "10, 150",
-                            "size": "300, 20",
-                            "text-alignment": "left",
-                            "title": "Brightness:"
-                        }
-                    },
-                    "CSlider": {
-                        "attributes": {
-                            "bitmap": "slider_background",
-                            "class": "CSlider",
-                            "handle-bitmap": "slider_handle",
-                            "origin": "20, 170",
-                            "size": "290, 20"
                         }
                     }
                 }

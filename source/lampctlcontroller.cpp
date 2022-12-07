@@ -25,7 +25,6 @@
 #include "lampctlcids.h"
 #include "lampctlcontroller.h"
 #include "lampctlconnectioncontroller.h"
-#include "lampctlparamids.h"
 #include "util.h"
 
 #include "base/source/fstreamer.h"
@@ -52,15 +51,6 @@ tresult LampctlController::initialize(FUnknown *context)
     if (result != kResultOk) {
         return result;
     }
-
-    parameters.addParameter(
-        STR16("Brightness"),
-        nullptr,
-        1, // step count
-        0, // default value
-        ParameterInfo::kCanAutomate,
-        kBrightnessId
-    );
 
     return result;
 }
