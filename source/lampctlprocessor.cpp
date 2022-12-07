@@ -23,8 +23,10 @@
  */
 
 #include <fstream>
+#include <list>
 
 #include "pluginterfaces/vst/ivstevents.h"
+#include "public.sdk/source/vst/utility/stringconvert.h"
 
 #include "lampctlcids.h"
 #include "lampctlprocessor.h"
@@ -34,6 +36,9 @@ using namespace Steinberg;
 using namespace Steinberg::Vst;
 
 using namespace Util;
+
+// TODO: make this configurable
+const float VelocityMult = 10000.f;
 
 LampctlProcessor::LampctlProcessor()
     : mSocket(nullptr)
@@ -86,7 +91,10 @@ tresult LampctlProcessor::process(ProcessData &data)
         return kResultOk;
     }
 
-    std::map<std::string, boost::json::array> eventsByProvider;
+    std::map<int32, boost::json::object> notesById;
+    std::map<std::string, std::list<int>> noteIDByProvider;
+
+    // TODO handle notes that continue (kNoteOff followed by kNoteOn)
 
     // Process input events one by one
     IEventList *inputEvents = data.inputEvents;
@@ -96,34 +104,65 @@ tresult LampctlProcessor::process(ProcessData &data)
             Event event;
             if (inputEvents->getEvent(i, event) == kResultOk) {
 
-                // We are only interested in note on / off events
-                if (event.type != Event::kNoteOnEvent &&
-                        event.type != Event::kNoteOffEvent) {
-                    continue;
+                switch (event.type) {
+                case Event::kNoteOnEvent:
+                {
+                    if (auto lampIt = mMap.find(event.noteOn.pitch); lampIt != mMap.end()) {
+                        auto lamp = lampIt->second;
+                        auto obj = lamp.obj;
+                        auto id = event.noteOn.noteId;
+                        obj["state"] = true;
+                        obj["duration"] = int((1.f - event.noteOn.velocity) * VelocityMult);
+                        notesById.insert({id, obj});
+                        noteIDByProvider[lamp.provider].push_back(id);
+                    }
+                    break;
                 }
+                case Event::kNoteOffEvent:
+                {
+                    if (auto lampIt = mMap.find(event.noteOff.pitch); lampIt != mMap.end()) {
+                        auto lamp = lampIt->second;
+                        auto obj = lamp.obj;
+                        auto id = event.noteOff.noteId;
+                        obj["state"] = false;
+                        obj["duration"] = int((1.f - event.noteOff.velocity) * VelocityMult);
+                        notesById.insert({id, obj});
+                        noteIDByProvider[lamp.provider].push_back(id);
+                    }
+                    break;
+                }
+                case Event::kNoteExpressionTextEvent:
+                {
+                    if (auto objIt = notesById.find(event.noteExpressionText.noteId); objIt != notesById.end()) {
+                        auto &obj = objIt->second;
 
-                // Determine the pitch and value
-                int eventPitch = event.type == Event::kNoteOnEvent ?
-                            event.noteOn.pitch :
-                            event.noteOff.pitch;
-                bool eventValue = event.type == Event::kNoteOnEvent;
+                        // Parse the JSON
+                        auto text = VST3::StringConvert::convert(event.noteExpressionText.text);
+                        boost::json::error_code ec;
+                        auto v = boost::json::parse(text, ec).as_object();
+                        if (ec) {
+                            continue;
+                        }
 
-                // Attempt to find the lamp by index
-                if (auto lampIt = mMap.find(eventPitch); lampIt != mMap.end()) {
-
-                    // Create an event and add it to the provider map
-                    auto lamp = lampIt->second;
-                    auto obj = lamp.obj;
-                    obj["state"] = eventValue;
-                    eventsByProvider[lamp.provider].push_back(obj);
+                        // Merge the keys into the object
+                        for (const auto& kv : v) {
+                            obj.insert(kv);
+                        }
+                    }
+                    break;
+                }
                 }
             }
         }
     }
 
     // If there were events, send them
-    for (const auto &kv : eventsByProvider) {
-        sendEvents(kv.first, kv.second);
+    for (const auto &kv : noteIDByProvider) {
+        boost::json::array ar;
+        for (const auto &id : kv.second) {
+            ar.push_back(notesById[id]);
+        }
+        sendEvents(kv.first, ar);
     }
 
     return kResultOk;
