@@ -55,6 +55,9 @@ public:
     Steinberg::tresult PLUGIN_API initialize(Steinberg::FUnknown *context) SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API notify(Steinberg::Vst::IMessage *message) SMTG_OVERRIDE;
 
+    Steinberg::tresult PLUGIN_API setState(Steinberg::IBStream *state) SMTG_OVERRIDE;
+    Steinberg::tresult PLUGIN_API getState(Steinberg::IBStream *state) SMTG_OVERRIDE;
+
     Steinberg::IPlugView *createView(Steinberg::FIDString name) SMTG_OVERRIDE;
 
     VSTGUI::IController *createSubController(VSTGUI::UTF8StringPtr name,
@@ -75,6 +78,7 @@ public:
 
 private:
 
+    void sendSetMapPath();
     void updateControllers();
 
     std::list<LampctlConnectionController *> mConnectionControllers;

@@ -28,6 +28,9 @@
 #include "lampctlparamids.h"
 #include "util.h"
 
+#include "base/source/fstreamer.h"
+#include "public.sdk/source/vst/utility/stringconvert.h"
+
 #include "vstgui/lib/cfileselector.h"
 #include "vstgui/plugin-bindings/vst3editor.h"
 
@@ -107,6 +110,53 @@ tresult LampctlController::notify(IMessage *message)
     return kResultFalse;
 }
 
+tresult LampctlController::setState(IBStream *state)
+{
+    IBStreamer streamer(state, kLittleEndian);
+
+    TChar tVal[256] = {0};
+
+    // Read the IP address
+    if (!streamer.readStringUtf8(tVal, sizeof(tVal) / sizeof(TChar))) {
+        return kResultFalse;
+    }
+    mIP = VST3::StringConvert::convert(tVal);
+
+    // Read the map path
+    if (!streamer.readStringUtf8(tVal, sizeof(tVal) / sizeof(TChar))) {
+        return kResultFalse;
+    }
+    mMapPath = VST3::StringConvert::convert(tVal);
+
+    // If a map path was read, attempt to load it
+    if (!mMapPath.empty()) {
+        sendSetMapPath();
+    }
+
+    return kResultOk;
+}
+
+tresult LampctlController::getState(IBStream *state)
+{
+    IBStreamer streamer(state, kLittleEndian);
+
+    TChar tVal[256] = {0};
+
+    // Write the IP address
+    if (!VST3::StringConvert::convert(mIP.getString(), tVal, sizeof(tVal) / sizeof(TChar)) ||
+            !streamer.writeStringUtf8(tVal)) {
+        return kResultFalse;
+    }
+
+    // Write the map path
+    if (!VST3::StringConvert::convert(mMapPath.getString(), tVal, sizeof(tVal) / sizeof(TChar)) ||
+            !streamer.writeStringUtf8(tVal)) {
+        return kResultFalse;
+    }
+
+    return kResultOk;
+}
+
 IPlugView *LampctlController::createView(FIDString name)
 {
     if (FIDStringsEqual(name, ViewType::kEditor)) {
@@ -176,10 +226,7 @@ void LampctlController::browse()
             int numSelectedFiles = selector->getNumSelectedFiles();
             if (numSelectedFiles == 1) {
                 mMapPath = selector->getSelectedFile(0);
-                ::sendMessage(this,
-                              MSG_ID_SET_MAP_FILE,
-                              MSG_ATTR_PATH,
-                              mMapPath.getString());
+                sendSetMapPath();
             }
         });
         selector->forget();
@@ -194,6 +241,14 @@ void LampctlController::removeConnectionController(LampctlConnectionController *
     if (it != mConnectionControllers.end()) {
         mConnectionControllers.erase(it);
     }
+}
+
+void LampctlController::sendSetMapPath()
+{
+    ::sendMessage(this,
+                  MSG_ID_SET_MAP_FILE,
+                  MSG_ATTR_PATH,
+                  mMapPath.getString());
 }
 
 void LampctlController::updateControllers()
