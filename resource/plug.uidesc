@@ -1,6 +1,14 @@
 {
     "vstgui-ui-description": {
         "version": "1",
+        "bitmaps": {
+            "slider_background": {
+                "path": "slider_background.png"
+            },
+            "slider_handle": {
+                "path": "slider_handle.png"
+            }
+        },
         "templates": {
             "Editor": {
                 "attributes": {
