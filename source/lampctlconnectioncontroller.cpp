@@ -72,6 +72,7 @@ CView *LampctlConnectionController::verifyView(CView* view,
         switch (pControl->getTag()) {
         case kIPTag:
             mIP = dynamic_cast<CTextEdit *>(view);
+            mIP->setText(mController->getIP());
             break;
         case kConnectStatusTag:
             mConnectStatus = dynamic_cast<CTextLabel *>(view);

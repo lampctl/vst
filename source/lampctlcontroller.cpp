@@ -132,6 +132,11 @@ IController *LampctlController::createSubController(VSTGUI::UTF8StringPtr name,
     return nullptr;
 }
 
+const UTF8String &LampctlController::getIP() const
+{
+    return mIP;
+}
+
 const UTF8String &LampctlController::getConnectStatus() const
 {
     return mConnectStatus;
